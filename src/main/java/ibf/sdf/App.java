@@ -1,33 +1,31 @@
 package ibf.sdf;
 
-import java.util.Random;
-import java.util.Scanner;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 // CREATE CLIENT SERVER FOR THIS GAME
-
 public final class App {
-    private App() {
-    }
+    public static void main(String[] args) throws NumberFormatException, IOException {
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        ServerSocket serverSocket = new ServerSocket(Integer.parseInt(args[0]));
+        System.out.println("Waiting for connection...");
 
-    public static void main(String[] args) {
-        Random rand = new Random();
-        Integer guessNumber = rand.nextInt(100);
-        Integer myGuess = 0;
+        while (true) {
+            try {
+                Socket socket = serverSocket.accept();
+                System.out.println("Connected...");
 
-        try (Scanner scanner = new Scanner(System.in)) {
-            while (myGuess != guessNumber) {
-                System.out.println("Guess your number!");
-                System.out.print("> ");
-                myGuess = scanner.nextInt();
-                if (myGuess < guessNumber) {
-                    System.out.println("A bit higher.");
-                } else if (myGuess > guessNumber) {
-                    System.out.println("A bit lower.");
-                } else {
-                    System.out.println("Nice! You got it ");
-                    System.exit(0);
-                }
+                ClientHandler cH = new ClientHandler(socket);
+                executorService.submit(cH);
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
         }
+
     }
 }
